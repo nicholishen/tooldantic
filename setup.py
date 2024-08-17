@@ -25,7 +25,7 @@ setup(
         "docstring-parser",
     ],
     extras_require={
-        "openai": ["openai>=1.40.0"],  # Specify the correct version or use "*" for any version
+        "openai": ["openai>=1.40.0"],
     },
     include_package_data=True,
 )
