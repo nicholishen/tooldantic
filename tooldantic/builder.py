@@ -4,7 +4,7 @@ import datetime
 import inspect
 import logging
 from typing import (Annotated, Any, Callable, Dict, List, Literal, Optional,
-                    Tuple, Type, TypeVar, Union, get_args, get_origin)
+                    Tuple, Type, Union, get_args, get_origin)
 
 import docstring_parser
 import pydantic
@@ -31,13 +31,14 @@ CONSTRAINTS_MAP = {
 
 
 class ModelBuilder(BaseModel):
+    
     base_model: Type[BaseModel] = ToolBaseModel
     default_type_for_none: Type = Any
     is_set_defaults_from_values: bool = False
     is_parse_docstrings: bool = False
     # is_use_examples_from_values: bool = False
 
-    def create_model_from_function(
+    def model_from_function(
         self,
         func: Callable[..., Any],
         model_name: Optional[str] = None,
@@ -78,7 +79,9 @@ class ModelBuilder(BaseModel):
                 raise ToolError(message)
             if param.default is not _Empty:
                 default = param.default
-            elif docstring_default := docstring.get(name, {}).get("default") is not None:
+            elif (
+                docstring_default := docstring.get(name, {}).get("default") is not None
+            ):
                 default = docstring_default
             else:
                 default = _Empty
@@ -99,7 +102,7 @@ class ModelBuilder(BaseModel):
 
         return self._create_pydantic_model(model_name, fields, model_description)
 
-    def create_model_from_schema_dict(
+    def model_from_dict(
         self,
         schema_dict: Dict[str, Any],
         model_name: str,
@@ -122,12 +125,12 @@ class ModelBuilder(BaseModel):
         logger.debug(f"Processed fields from schema dict: {fields}")
         return self._create_pydantic_model(model_name, fields, model_description)
 
-    def create_model_from_json_schema(
+    def model_from_json_schema(
         self, schema: Dict[str, Any], model_name: Optional[str] = None
     ) -> Type[ModelT]:
         # TODO: Add support for nested models with `$ref` and `definitions`
         logger.debug("Creating model from JSON schema")
-        name, description, parameters = self.extract_schema_details(schema)
+        name, description, parameters = self._extract_schema_details(schema)
         logger.debug(
             f"Extracted schema details: name={name}, description={description}, parameters={parameters}"
         )
@@ -140,7 +143,7 @@ class ModelBuilder(BaseModel):
             model_name=model_name, model_description=description or None, fields=fields
         )
 
-    def extract_schema_details(self, schema: Dict[str, Any]) -> Tuple[str, str, Dict]:
+    def _extract_schema_details(self, schema: Dict[str, Any]) -> Tuple[str, str, Dict]:
         logger.debug(f"Extracting schema details from: {schema}")
 
         def find_keys(schema_part, keys, result=None):
@@ -344,7 +347,7 @@ class ModelBuilder(BaseModel):
             return default, ...
         elif isinstance(default, dict):
             return (
-                self.create_model_from_schema_dict(
+                self.model_from_dict(
                     default, f"{model_name}_{field_name.capitalize()}"
                 ),
                 ...,
@@ -372,11 +375,7 @@ class ModelBuilder(BaseModel):
             return List[Any]
         item = default[0]
         if isinstance(item, dict):
-            return List[
-                self.create_model_from_schema_dict(
-                    item, model_name=f"{model_name}_Item"
-                )
-            ]
+            return List[self.model_from_dict(item, model_name=f"{model_name}_Item")]
         item_type = item if is_type_or_annotation(item) else type(item)
         return List[item_type]
 
@@ -397,5 +396,5 @@ class ModelBuilder(BaseModel):
             f"Interpreting schema dict for field: {field_name} with value: {value}"
         )
         nested_model_name = f"{field_name.capitalize()}_Model"
-        nested_model = self.create_model_from_schema_dict(value, nested_model_name)
+        nested_model = self.model_from_dict(value, nested_model_name)
         return nested_model, ...

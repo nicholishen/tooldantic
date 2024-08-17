@@ -25,7 +25,7 @@ class ToolWrapper:
     def __init__(self, f, validate_parameters=True):
         self.f = f
         self.validate_parameters = validate_parameters
-        self._model = ModelBuilder().create_model_from_function(f)
+        self._model = ModelBuilder().model_from_function(f)
         self._schema = self._model.model_json_schema_openai()
 
     def __call__(self, **kwargs):
@@ -188,7 +188,7 @@ def llm_callback(system_message, user_message, llm_parsing_tool):
     else:
         tool_schema = (
             ModelBuilder()
-            .create_model_from_function(llm_parsing_tool)
+            .model_from_function(llm_parsing_tool)
             .model_json_schema_openai()
         )
     r = CLIENT.chat.completions.create(

@@ -18,7 +18,7 @@ def test_create_model_from_function(model_builder):
         """Sample function for testing"""
         return f"{name}, {age}, {'student' if is_student else 'non-student'}"
 
-    model = model_builder.create_model_from_function(sample_function)
+    model = model_builder.model_from_function(sample_function)
 
     assert issubclass(model, BaseModel)
     assert model.__name__ == "sample_function"
@@ -38,14 +38,14 @@ def test_create_model_from_function_no_annotation(model_builder):
         return name
 
     with pytest.raises(ToolError):
-        model_builder.create_model_from_function(incomplete_function)
+        model_builder.model_from_function(incomplete_function)
 
 
 def test_create_model_from_function_no_default_value(model_builder):
     def incomplete_function(name: str):
         return name
 
-    model = model_builder.create_model_from_function(incomplete_function)
+    model = model_builder.model_from_function(incomplete_function)
     instance = model(name="John")
     assert instance.name == "John"
 
@@ -56,7 +56,7 @@ def test_create_model_from_schema_dict(model_builder):
         "age": 30,
         "is_student": True,
     }
-    model = model_builder.create_model_from_schema_dict(
+    model = model_builder.model_from_dict(
         sample_schema_dict, "SampleModel"
     )
 
@@ -75,7 +75,7 @@ def test_create_model_from_schema_dict_no_defaults(model_builder):
         "age": 30,
         "is_student": None,
     }
-    model = model_builder.create_model_from_schema_dict(
+    model = model_builder.model_from_dict(
         sample_schema_dict, "SampleModel", is_set_defaults_from_values=False
     )
 
@@ -98,7 +98,7 @@ def test_create_model_from_json_schema(model_builder):
             "required": ["name", "age"],
         },
     }
-    model = model_builder.create_model_from_json_schema(sample_json_schema)
+    model = model_builder.model_from_json_schema(sample_json_schema)
 
     assert issubclass(model, BaseModel)
     assert model.__name__ == "sample_json_schema"
@@ -124,7 +124,7 @@ def test_extract_schema_details(model_builder):
         },
     }
 
-    name, description, parameters = model_builder.extract_schema_details(
+    name, description, parameters = model_builder._extract_schema_details(
         sample_json_schema
     )
 

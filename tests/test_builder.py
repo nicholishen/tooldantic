@@ -12,7 +12,7 @@ class TbmNoExtra(ToolBaseModel):
 def test_create_model_from_simple_schema():
     data = {"name": "example name", "age": 30}
     model_name = "SimpleModel"
-    Model = ModelBuilder().create_model_from_schema_dict(data, model_name)
+    Model = ModelBuilder().model_from_dict(data, model_name)
 
     validated_data = Model(**data)
     assert validated_data.name == "example name"
@@ -22,7 +22,7 @@ def test_create_model_from_simple_schema():
 def test_create_model_from_nested_schema():
     data = {"outer": {"inner": {"name": "example name"}}}
     model_name = "NestedModel"
-    Model = ModelBuilder().create_model_from_schema_dict(data, model_name)
+    Model = ModelBuilder().model_from_dict(data, model_name)
 
     validated_data = Model(**data)
     assert validated_data.outer.inner.name == "example name"
@@ -31,7 +31,7 @@ def test_create_model_from_nested_schema():
 def test_create_model_with_list_of_strings():
     data = {"items": ["item1", "item2", "item3"]}
     model_name = "ListModel"
-    Model = ModelBuilder().create_model_from_schema_dict(data, model_name)
+    Model = ModelBuilder().model_from_dict(data, model_name)
 
     validated_data = Model(**data)
     assert validated_data.items == ["item1", "item2", "item3"]
@@ -40,7 +40,7 @@ def test_create_model_with_list_of_strings():
 def test_create_model_with_list_of_dicts():
     data = {"items": [{"name": "item1"}, {"name": "item2"}, {"name": "item3"}]}
     model_name = "ListDictModel"
-    Model = ModelBuilder().create_model_from_schema_dict(data, model_name)
+    Model = ModelBuilder().model_from_dict(data, model_name)
 
     validated_data = Model(**data)
     assert validated_data.items[0].name == "item1"
@@ -51,7 +51,7 @@ def test_create_model_with_list_of_dicts():
 def test_create_model_with_missing_required_field():
     data = {"name": "example name"}  # Assuming 'age' is required and missing
     model_name = "MissingFieldModel"
-    Model = ModelBuilder().create_model_from_schema_dict(
+    Model = ModelBuilder().model_from_dict(
         {"name": str, "age": int}, model_name
     )
 
@@ -64,7 +64,7 @@ def test_create_model_from_function():
         return {"name": name, "age": age}
 
     model_name = "FunctionModel"
-    Model = ModelBuilder().create_model_from_function(example_function, model_name)
+    Model = ModelBuilder().model_from_function(example_function, model_name)
 
     data = {"name": "example name", "age": 30}
     validated_data = Model(**data)
@@ -82,7 +82,7 @@ def test_create_model_from_json_schema():
         },
     }
 
-    Model = ModelBuilder().create_model_from_json_schema(json_schema)
+    Model = ModelBuilder().model_from_json_schema(json_schema)
 
     data = {"name": "example name", "age": 30}
     validated_data = Model(**data)
@@ -93,7 +93,7 @@ def test_create_model_from_json_schema():
 def test_infer_type_from_empty_list():
     data = {"items": []}
     model_name = "EmptyListModel"
-    Model = ModelBuilder().create_model_from_schema_dict(data, model_name)
+    Model = ModelBuilder().model_from_dict(data, model_name)
 
     validated_data = Model(**data)
     assert validated_data.items == []
@@ -102,7 +102,7 @@ def test_infer_type_from_empty_list():
 def test_create_model_with_none_values():
     data = {"name": None, "age": None}
     model_name = "NoneValuesModel"
-    Model = ModelBuilder().create_model_from_schema_dict(data, model_name)
+    Model = ModelBuilder().model_from_dict(data, model_name)
 
     validated_data = Model(**data)
     assert validated_data.name is None
@@ -113,7 +113,7 @@ def test_reject_extra_fields():
 
     data = {"name": "example name", "age": 30, "extra": "not allowed"}
     model_name = "RejectExtraFieldsModel"
-    Model = ModelBuilder(base_model=TbmNoExtra).create_model_from_schema_dict(
+    Model = ModelBuilder(base_model=TbmNoExtra).model_from_dict(
         {"name": str, "age": int}, model_name
     )
 
@@ -124,7 +124,7 @@ def test_reject_extra_fields():
 def test_nested_model_reject_extra_fields():
     nested_schema = {"inner": {"name": str}}
     model_name = "NestedRejectExtraModel"
-    Model = ModelBuilder(base_model=TbmNoExtra).create_model_from_schema_dict(nested_schema, model_name)
+    Model = ModelBuilder(base_model=TbmNoExtra).model_from_dict(nested_schema, model_name)
 
     data = {"inner": {"name": "Inner Name", "extra": "not allowed"}}
     with pytest.raises(ValidationError) as exc_info:
@@ -136,7 +136,7 @@ def test_complex_nested_structure():
         "profile": {"name": str, "details": {"age": int, "hobbies": [str]}}
     }
     model_name = "ComplexNestedModel"
-    Model = ModelBuilder().create_model_from_schema_dict(complex_schema, model_name)
+    Model = ModelBuilder().model_from_dict(complex_schema, model_name)
 
     data = {
         "profile": {
@@ -155,7 +155,7 @@ def test_dynamic_field_types():
 
     dynamic_schema = {"value": Any}
     model_name = "DynamicFieldModel"
-    Model = ModelBuilder().create_model_from_schema_dict(dynamic_schema, model_name)
+    Model = ModelBuilder().model_from_dict(dynamic_schema, model_name)
 
     for input_value in [123, "abc", [1, 2, 3], {"key": "value"}]:
         data = {"value": input_value}
@@ -185,7 +185,7 @@ def test_create_model_from_all_basic_types_schema():
         "join_date": "date",
     }
     model_name = "AllBasicTypesModel"
-    Model = ModelBuilder().create_model_from_schema_dict(schema, model_name)
+    Model = ModelBuilder().model_from_dict(schema, model_name)
 
     validated_data = Model(**data)
     assert validated_data.name == "example name"
@@ -201,7 +201,7 @@ def test_create_model_with_default_values():
     def f(name: str = "default name", age: int = 18):
         pass
 
-    Model = ModelBuilder().create_model_from_function(f)
+    Model = ModelBuilder().model_from_function(f)
 
     data = {}
     validated_data = Model(**data)
@@ -216,7 +216,7 @@ def test_create_model_with_optional_fields():
         pass
 
     model_name = "OptionalFieldsModel"
-    Model = ModelBuilder().create_model_from_function(f, model_name)
+    Model = ModelBuilder().model_from_function(f, model_name)
 
     data = {"name": "example name"}
     validated_data = Model(**data)
@@ -246,7 +246,7 @@ def test_create_model_from_complex_json_schema():
         },
     }
 
-    Model = ModelBuilder().create_model_from_json_schema(json_schema)
+    Model = ModelBuilder().model_from_json_schema(json_schema)
 
     data = {
         "name": "example name",
@@ -274,7 +274,7 @@ def test_create_model_with_constraints():
         },
     }
 
-    Model = ModelBuilder().create_model_from_json_schema(json_schema)
+    Model = ModelBuilder().model_from_json_schema(json_schema)
 
     valid_data = {"username": "user123", "age": 30}
     validated_data = Model(**valid_data)
@@ -290,7 +290,7 @@ def test_create_model_with_constraints():
 def test_create_model_with_nested_lists():
     schema = {"items": [{"name": str, "quantity": int}]}
     model_name = "NestedListsModel"
-    Model = ModelBuilder().create_model_from_schema_dict(schema, model_name)
+    Model = ModelBuilder().model_from_dict(schema, model_name)
 
     data = {
         "items": [{"name": "item1", "quantity": 5}, {"name": "item2", "quantity": 10}]
@@ -306,7 +306,7 @@ def test_create_model_with_nested_lists():
 def test_create_model_with_deeply_nested_structures():
     schema = {"level1": {"level2": {"level3": {"level4": {"name": str, "value": int}}}}}
     model_name = "DeeplyNestedModel"
-    Model = ModelBuilder().create_model_from_schema_dict(schema, model_name)
+    Model = ModelBuilder().model_from_dict(schema, model_name)
 
     data = {"level1": {"level2": {"level3": {"level4": {"name": "deep", "value": 42}}}}}
     validated_data = Model(**data)
@@ -322,8 +322,8 @@ def test_dynamic_schema_adaptation():
     model_name_v1 = "DynamicModelV1"
     model_name_v2 = "DynamicModelV2"
 
-    ModelV1 = ModelBuilder(base_model=TbmNoExtra).create_model_from_schema_dict(schema_v1, model_name_v1)
-    ModelV2 = ModelBuilder().create_model_from_schema_dict(schema_v2, model_name_v2)
+    ModelV1 = ModelBuilder(base_model=TbmNoExtra).model_from_dict(schema_v1, model_name_v1)
+    ModelV2 = ModelBuilder().model_from_dict(schema_v2, model_name_v2)
 
     data_v1 = {"name": "example name"}
     validated_data_v1 = ModelV1(**data_v1)
@@ -349,7 +349,7 @@ def test_llm_output_validation():
         },
     }
 
-    Model = ModelBuilder().create_model_from_json_schema(json_schema)
+    Model = ModelBuilder().model_from_json_schema(json_schema)
 
     valid_output = {"text": "This is a response", "score": 0.95}
     validated_output = Model(**valid_output)
@@ -368,7 +368,7 @@ def test_schema_with_optional_and_required_fields():
         pass
 
     model_name = "OptionalAndRequiredFieldsModel"
-    Model = ModelBuilder().create_model_from_function(f, model_name)
+    Model = ModelBuilder().model_from_function(f, model_name)
     data = {"required_field": "example"}
     validated_data = Model(**data)
     assert validated_data.required_field == "example"
@@ -379,7 +379,7 @@ def test_schema_with_optional_and_required_fields():
 def test_schema_with_boolean_field():
     schema = {"is_active": bool}
     model_name = "BooleanFieldModel"
-    Model = ModelBuilder().create_model_from_schema_dict(schema, model_name)
+    Model = ModelBuilder().model_from_dict(schema, model_name)
 
     data = {"is_active": True}
     validated_data = Model(**data)
@@ -402,7 +402,7 @@ def test_create_model_with_various_field_names_and_types():
         "field5": date,
     }
     model_name = "VariousFieldNamesAndTypesModel"
-    Model = ModelBuilder().create_model_from_schema_dict(schema, model_name)
+    Model = ModelBuilder().model_from_dict(schema, model_name)
 
     data = {
         "field1": "string_value",
@@ -428,7 +428,7 @@ def test_create_model_with_any_type_in_json_schema():
         },
     }
 
-    Model = ModelBuilder().create_model_from_json_schema(json_schema)
+    Model = ModelBuilder().model_from_json_schema(json_schema)
 
     data = {"value": 123}
     validated_data = Model(**data)
@@ -452,5 +452,5 @@ def test_create_model_kwargs_in_function_signature():
     def f(**kwargs):
         pass
 
-    ModelBuilder().create_model_from_function(f)
+    ModelBuilder().model_from_function(f)
     assert True

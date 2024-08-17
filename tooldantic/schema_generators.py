@@ -2,7 +2,6 @@ from typing import Any, Dict
 
 from pydantic.json_schema import GenerateJsonSchema
 
-from .utils import _ensure_strict_json_schema
 
 
 class CompatibilitySchemaGenerator(GenerateJsonSchema):
@@ -35,7 +34,6 @@ class CompatibilitySchemaGenerator(GenerateJsonSchema):
     def generate(self, schema, mode):
         json_schema = super().generate(schema, mode)
         title = json_schema.get("title")
-        description = json_schema.get("description")
         if self.is_apply_strict_rules:
             json_schema = self._ensure_strict_json_schema(json_schema, path=())
         if self.is_inlined_refs and "$defs" in json_schema:
@@ -47,7 +45,8 @@ class CompatibilitySchemaGenerator(GenerateJsonSchema):
         if self.is_removed_titles:
             top_level_title = json_schema.pop("title", title)
             json_schema = self._remove_target_key(json_schema, "title")
-            json_schema["title"] = top_level_title
+            # This will get popped downstream and used as the name
+            json_schema["title"] = top_level_title  
         return json_schema
 
     def _inline_references(self, schema, definitions, visited=None, parent=None):
@@ -139,7 +138,7 @@ class CompatibilitySchemaGenerator(GenerateJsonSchema):
         if isinstance(properties, dict):
             json_schema["required"] = [prop for prop in properties.keys()]
             json_schema["properties"] = {
-                key: _ensure_strict_json_schema(
+                key: self._ensure_strict_json_schema(
                     prop_schema, path=(*path, "properties", key)
                 )
                 for key, prop_schema in properties.items()
@@ -148,32 +147,32 @@ class CompatibilitySchemaGenerator(GenerateJsonSchema):
         # { 'type': 'array', 'items': {...} }
         items = json_schema.get("items")
         if isinstance(items, list):
-            json_schema["items"] = _ensure_strict_json_schema(
+            json_schema["items"] = self._ensure_strict_json_schema(
                 items, path=(*path, "items")
             )
         # unions
         any_of = json_schema.get("anyOf")
         if isinstance(any_of, list):
             json_schema["anyOf"] = [
-                _ensure_strict_json_schema(variant, path=(*path, "anyOf", str(i)))
+                self._ensure_strict_json_schema(variant, path=(*path, "anyOf", str(i)))
                 for i, variant in enumerate(any_of)
             ]
         # intersections
         all_of = json_schema.get("allOf")
         if isinstance(all_of, list):
             json_schema["allOf"] = [
-                _ensure_strict_json_schema(entry, path=(*path, "anyOf", str(i)))
+                self._ensure_strict_json_schema(entry, path=(*path, "anyOf", str(i)))
                 for i, entry in enumerate(all_of)
             ]
         defs = json_schema.get("$defs")
         if isinstance(defs, dict):  # is_dict(defs):
             for def_name, def_schema in defs.items():
-                _ensure_strict_json_schema(def_schema, path=(*path, "$defs", def_name))
+                self._ensure_strict_json_schema(def_schema, path=(*path, "$defs", def_name))
 
         definitions = json_schema.get("definitions")
         if isinstance(definitions, dict):
             for definition_name, definition_schema in definitions.items():
-                _ensure_strict_json_schema(
+                self._ensure_strict_json_schema(
                     definition_schema, path=(*path, "definitions", definition_name)
                 )
         return json_schema

@@ -496,3 +496,10 @@ The synthetic data generated in this pipeline can be used for fine-tuning models
 - Experiment with the examples provided here on your own data.
 - Explore the [Tooldantic documentation](link-to-docs) for more advanced features.
 - Consider combining `tooldantic` with other libraries to further optimize your LLM workflows.
+
+## Attribution
+
+This project includes a function adapted from the OpenAI Python client library:
+- Method `ModelBuilder._ensure_strict_json_schema` is based on code from OpenAI.
+- Original source: [https://github.com/openai/openai-python](https://github.com/openai/openai-python)
+- License: Apache License, Version 2.0

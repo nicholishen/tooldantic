@@ -47,7 +47,7 @@ class ToolWrapperBase:
             self._model = None
 
     def _create_model_from_function(self, func: Callable):
-        return ModelBuilder(base_model=self.base_model).create_model_from_function(
+        return ModelBuilder(base_model=self.base_model).model_from_function(
             func,
             model_name=self.name,
             model_description=self.description,
