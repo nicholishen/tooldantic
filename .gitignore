@@ -162,3 +162,5 @@ cython_debug/
 #.idea/
 *.zip
 notebooks/
+junk_scripts/
+loaddotenv.py

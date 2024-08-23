@@ -179,9 +179,10 @@ class CompatibilitySchemaGenerator(GenerateJsonSchema):
 
 
 class GenericSchemaGenerator(CompatibilitySchemaGenerator):
-    """
-    Schema generator for generic functions, extending ParamsSchemaGenerator.
-    """
+    is_reordered_keys = True
+    is_removed_titles = True
+    is_inlined_refs = True
+
 
     def generate(self, schema, mode):
         json_schema = super().generate(schema, mode)
@@ -265,6 +266,11 @@ class OpenAiResponseFormatGenerator(StrictBaseSchemaGenerator):
 
 class OpenAiSchemaGenerator(OpenAiStrictSchemaGenerator):
     is_apply_strict_rules = False
+
+    def generate(self, schema, mode):
+        json_schema = super().generate(schema, mode)
+        json_schema['function'].pop('strict', None)
+        return json_schema
 
 
 class AnthropicSchemaGenerator(GenericSchemaGenerator):

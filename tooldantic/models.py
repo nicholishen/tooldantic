@@ -22,6 +22,16 @@ class ToolBaseModel(pydantic.BaseModel):
     _schema_generator: ClassVar[Optional[GenerateJsonSchema]] = None
 
     @classmethod
+    def bind_schema_generator(cls, schema_generator: GenerateJsonSchema) -> None:
+        """
+        Bind a schema generator to the model class.
+
+        Args:
+            schema_generator: The schema generator to bind to the model class.
+        """
+        cls._schema_generator = schema_generator
+
+    @classmethod
     def model_json_schema(cls, schema_generator=None, **kwargs):
         # explicitly pass the ref template in case pydantic changes the default
         schema_generator = (
@@ -34,7 +44,6 @@ class ToolBaseModel(pydantic.BaseModel):
             **kwargs,
         }
         return super().model_json_schema(**default_kwargs)
-
 
 
 class OpenAiBaseModel(ToolBaseModel):

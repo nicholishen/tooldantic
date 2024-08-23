@@ -1,10 +1,20 @@
-# TODO: fix `is_use_examples_from_values` & ensure support for all constraints in json schema
-
 import datetime
 import inspect
 import logging
-from typing import (Annotated, Any, Callable, Dict, List, Literal, Optional,
-                    Tuple, Type, Union, get_args, get_origin)
+from typing import (
+    Annotated,
+    Any,
+    Callable,
+    Dict,
+    List,
+    Literal,
+    Optional,
+    Tuple,
+    Type,
+    Union,
+    get_args,
+    get_origin,
+)
 
 import docstring_parser
 import pydantic
@@ -31,12 +41,11 @@ CONSTRAINTS_MAP = {
 
 
 class ModelBuilder(BaseModel):
-    
+
     base_model: Type[BaseModel] = ToolBaseModel
     default_type_for_none: Type = Any
     is_set_defaults_from_values: bool = False
     is_parse_docstrings: bool = False
-    # is_use_examples_from_values: bool = False
 
     def model_from_function(
         self,
@@ -137,6 +146,11 @@ class ModelBuilder(BaseModel):
         model_name = model_name or name
         if parameters is None:
             raise ValueError("No parameters found in the schema.")
+        if "$defs" in parameters:
+            raise NotImplementedError(
+                "Nested models and schemas with '$defs' are not supported yet. "
+                "Try using inlined schema."
+            )
         fields = self._parse_parameters(parameters, model_name)
         logger.debug(f"Processed fields from JSON schema: {fields}")
         return self._create_pydantic_model(

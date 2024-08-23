@@ -69,8 +69,9 @@ def normalize_prompt(prompt: str, max_spaces: int = 3) -> str:
 
 def validation_error_to_llm_feedback(
     error: pydantic.ValidationError,
-    message_to_assistant: str = "Please pay close attention to the following "
-    "pydantic errors and use them to correct your tool inputs.",
+    SYSTEM: str = "Please pay close attention to the following "
+    "pydantic validation errors and use them to correct your "
+    "tool inputs and call the tool again.",
 ) -> str:
     """
     Convert a Pydantic ValidationError to a standardized LLM feedback message.
@@ -96,7 +97,7 @@ def validation_error_to_llm_feedback(
 
     feedback = {
         "success": False,
-        "message_to_assistant": message_to_assistant,
+        "SYSTEM": SYSTEM,
         "errors": errors,
     }
     return json.dumps(feedback)

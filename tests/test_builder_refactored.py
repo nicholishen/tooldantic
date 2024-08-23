@@ -244,3 +244,20 @@ def test_create_model_with_various_field_names_and_types():
     assert validated_data.field3 == 456.78
     assert validated_data.field4 is True
     assert validated_data.field5 == date(2023, 1, 1)
+
+
+
+
+
+
+
+def test_nested_data_to_schema_back_to_model_and_validate():
+    from tooldantic.models import GenericBaseModel
+
+
+    data = {'inners': [{'name': 'Alice', 'age': 30}, {'name': 'Bob', 'age': 25}]}
+    model_builder = ModelBuilder(base_model=GenericBaseModel)
+    schema_from_data = model_builder.model_from_dict(data, 'NestedModel').model_json_schema()
+    ModelFromSchema = model_builder.model_from_json_schema(schema_from_data, "NestedModel")
+    validated_data = ModelFromSchema(**data)
+    assert validated_data.inners[0].name == 'Alice'
