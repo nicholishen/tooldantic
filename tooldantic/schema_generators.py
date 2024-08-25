@@ -251,7 +251,7 @@ class OpenAiStrictSchemaGenerator(StrictBaseSchemaGenerator):
 
 class OpenAiResponseFormatGenerator(StrictBaseSchemaGenerator):
     """
-    Schema generator for OpenAI functions, extending GenericFunctionSchemaGenerator.
+    Schema generator for OpenAI Response Format, extending GenericFunctionSchemaGenerator.
     """
 
     def generate(self, schema, mode):

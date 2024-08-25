@@ -19,7 +19,7 @@ class ToolBaseModel(pydantic.BaseModel):
     Subclass of `pydantic.BaseModel` that provides additional functionality for LLM tool schema generation.
     """
 
-    _schema_generator: ClassVar[Optional[GenerateJsonSchema]] = None
+    schema_generator: ClassVar[Optional[GenerateJsonSchema]] = None
 
     @classmethod
     def bind_schema_generator(cls, schema_generator: GenerateJsonSchema) -> None:
@@ -29,13 +29,13 @@ class ToolBaseModel(pydantic.BaseModel):
         Args:
             schema_generator: The schema generator to bind to the model class.
         """
-        cls._schema_generator = schema_generator
+        cls.schema_generator = schema_generator
 
     @classmethod
     def model_json_schema(cls, schema_generator=None, **kwargs):
         # explicitly pass the ref template in case pydantic changes the default
         schema_generator = (
-            schema_generator or cls._schema_generator or CompatibilitySchemaGenerator
+            schema_generator or cls.schema_generator or CompatibilitySchemaGenerator
         )
         default_kwargs = {
             "ref_template": "#/$defs/{model}",
@@ -47,27 +47,27 @@ class ToolBaseModel(pydantic.BaseModel):
 
 
 class OpenAiBaseModel(ToolBaseModel):
-    _schema_generator = OpenAiSchemaGenerator
+    schema_generator = OpenAiSchemaGenerator
 
 
 class OpenAiStrictBaseModel(ToolBaseModel):
     """This model sets up the model so that the schema includes:
     `additionalProperties=False`"""
 
-    _schema_generator = OpenAiStrictSchemaGenerator
+    schema_generator = OpenAiStrictSchemaGenerator
 
 
 class OpenAiResponseFormatBaseModel(ToolBaseModel):
-    _schema_generator = OpenAiResponseFormatGenerator
+    schema_generator = OpenAiResponseFormatGenerator
 
 
 class AnthropicBaseModel(ToolBaseModel):
-    _schema_generator = AnthropicSchemaGenerator
+    schema_generator = AnthropicSchemaGenerator
 
 
 class GoogleBaseModel(ToolBaseModel):
-    _schema_generator = GoogleSchemaGenerator
+    schema_generator = GoogleSchemaGenerator
 
 
 class GenericBaseModel(ToolBaseModel):
-    _schema_generator = GenericSchemaGenerator
+    schema_generator = GenericSchemaGenerator
