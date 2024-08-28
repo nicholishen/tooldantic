@@ -8,6 +8,7 @@ from .models import (
     GoogleBaseModel,
     OpenAiBaseModel,
     ToolBaseModel,
+    OpenAiResponseFormatBaseModel,
 )
 from .schema_generators import (
     AnthropicSchemaGenerator,
@@ -35,6 +36,7 @@ __all__ = [
     "AnthropicBaseModel",
     "GoogleBaseModel",
     "GenericBaseModel",
+    "OpenAiResponseFormatBaseModel",
     "Field",
     # Schema generators
     "GenerateJsonSchema",
