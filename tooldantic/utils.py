@@ -2,7 +2,16 @@ import inspect
 import json
 import re
 import textwrap
-from typing import Annotated, Any, Callable, NewType, TypeVar, Union, get_origin, cast, Dict, List, Any
+from typing import (
+    Annotated,
+    Any,
+    Callable,
+    NewType,
+    TypeVar,
+    Union,
+    get_origin,
+    Any,
+)
 
 import pydantic
 import pydantic_core
@@ -10,7 +19,7 @@ import pydantic_core
 
 class ToolError(Exception):
     """Base class for exceptions raised by tools."""
-    
+
 
 def normalize_prompt(prompt: str, max_spaces: int = 3) -> str:
     """Helper function to dedent a multi-line prompt string and remove extra spaces."""
@@ -58,18 +67,9 @@ def is_type_or_annotation(obj: Any) -> bool:
     return False
 
 
-def normalize_prompt(prompt: str, max_spaces: int = 3) -> str:
-    """Helper function to dedent a multi-line prompt string and remove extra spaces."""
-    prompt = "\n".join(
-        re.sub(rf"(?<=\S)\s{{{max_spaces},}}", " ", line)
-        for line in textwrap.dedent(prompt).split("\n")
-    )
-    return prompt
-
-
 def validation_error_to_llm_feedback(
     error: pydantic.ValidationError,
-    SYSTEM: str = "Please pay close attention to the following "
+    SYSTEM: str = "Pay (close) attention to the following "
     "pydantic validation errors and use them to correct your "
     "tool inputs and call the tool again.",
 ) -> str:
@@ -83,6 +83,7 @@ def validation_error_to_llm_feedback(
         - message_to_assistant: str - Message to assistant
         - errors: List[Dict[str, Any]] - List of errors
     """
+
     def nested_objs_to_str(obj):
         if isinstance(obj, dict):
             return {k: nested_objs_to_str(v) for k, v in obj.items()}
@@ -91,9 +92,8 @@ def validation_error_to_llm_feedback(
         if isinstance(obj, pydantic.ValidationError):
             return obj.errors(include_url=False)
         return str(obj)
-    
-    errors = [nested_objs_to_str(e) for e in error.errors(include_url=False)]
 
+    errors = [nested_objs_to_str(e) for e in error.errors(include_url=False)]
 
     feedback = {
         "success": False,
