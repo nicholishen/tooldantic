@@ -47,27 +47,27 @@ class ToolBaseModel(pydantic.BaseModel):
 
 
 class OpenAiBaseModel(ToolBaseModel):
-    schema_generator = OpenAiSchemaGenerator
+    _schema_generator = OpenAiSchemaGenerator
 
 
 class OpenAiStrictBaseModel(ToolBaseModel):
     """This model sets up the model so that the schema includes:
     `additionalProperties=False`"""
 
-    schema_generator = OpenAiStrictSchemaGenerator
+    _schema_generator = OpenAiStrictSchemaGenerator
 
 
 class OpenAiResponseFormatBaseModel(ToolBaseModel):
-    schema_generator = OpenAiResponseFormatGenerator
+    _schema_generator = OpenAiResponseFormatGenerator
 
 
 class AnthropicBaseModel(ToolBaseModel):
-    schema_generator = AnthropicSchemaGenerator
+    _schema_generator = AnthropicSchemaGenerator
 
 
 class GoogleBaseModel(ToolBaseModel):
-    schema_generator = GoogleSchemaGenerator
+    _schema_generator = GoogleSchemaGenerator
 
 
 class GenericBaseModel(ToolBaseModel):
-    schema_generator = GenericSchemaGenerator
+    _schema_generator = GenericSchemaGenerator
