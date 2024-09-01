@@ -13,4 +13,4 @@ from tooldantic.models import (
 
 # Sample model definitions for testing
 def test_tool_base_model():
-    assert hasattr(ToolBaseModel, "schema_generator")
+    assert hasattr(ToolBaseModel, "_schema_generator")
