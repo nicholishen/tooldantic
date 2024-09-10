@@ -174,8 +174,13 @@ class ModelBuilder(BaseModel):
             return result
 
         title_or_name = "title" if "title" in schema else "name"
-        keys_to_find = [title_or_name, "description", "parameters"]
+      
+        inner_schema = "schema" if "json_schema" in schema else "parameters"
+     
+        keys_to_find = [title_or_name, "description", inner_schema]
         found = find_keys(schema, keys_to_find)
+        if "schema" in found:
+            found['parameters'] = found.pop('schema')
         if "parameters" not in found:
             found["parameters"] = schema
         logger.debug(f"Found keys: {found}")

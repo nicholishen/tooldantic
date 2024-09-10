@@ -5,6 +5,7 @@ from pydantic.fields import FieldInfo
 from pydantic_core import PydanticUndefined
 from tooldantic.builder import ModelBuilder, _Empty
 from tooldantic.utils import ToolError, Any as ToolAny
+import tooldantic as td
 
 
 # Fixture for the ModelBuilder
@@ -200,4 +201,14 @@ def test_process_field_with_annotation(model_builder):
     assert field_type == str
     assert field_default == "default_value"
 
-
+def test_new_response_format():
+    class SampleModel(td.OpenAiResponseFormatBaseModel):
+        """Sample model for testing"""
+        name: str
+        
+    schema = SampleModel.model_json_schema()
+    
+    model_builder = ModelBuilder(base_model=td.OpenAiResponseFormatBaseModel)
+    
+    Model = model_builder.model_from_json_schema(schema)
+    
