@@ -40,12 +40,21 @@ CONSTRAINTS_MAP = {
 }
 
 
-class ModelBuilder(BaseModel):
+class ModelBuilder:
 
-    base_model: Type[BaseModel] = ToolBaseModel
-    default_type_for_none: Type = Any
-    is_set_defaults_from_values: bool = False
-    is_parse_docstrings: bool = False
+    def __init__(
+        self,
+        base_model: Type[BaseModel] = ToolBaseModel,
+        default_type_for_none: Type = Any,
+        is_set_defaults_from_values: bool = False,
+        is_parse_docstrings: bool = False,
+        **pydantic_kwargs
+    ):
+        self.base_model = base_model
+        self.default_type_for_none = default_type_for_none
+        self.is_set_defaults_from_values = is_set_defaults_from_values
+        self.is_parse_docstrings = is_parse_docstrings
+        self.pydantic_kwargs = pydantic_kwargs
 
     def model_from_function(
         self,
@@ -67,7 +76,8 @@ class ModelBuilder(BaseModel):
                 }
                 for p in docstring.params
             }
-            model_description = model_description or docstring.get("description")
+            model_description = model_description or docstring.get(
+                "description")
         else:
             docstring = {}
         signature = inspect.signature(func)
@@ -84,7 +94,8 @@ class ModelBuilder(BaseModel):
                 # allow kwargs in tools!
                 if param.kind == param.VAR_KEYWORD:
                     continue
-                message = f"Parameter `{name}` in function `{func.__name__}` has no annotation or docstring type."
+                message = f"Parameter `{name}` in function `{
+                    func.__name__}` has no annotation or docstring type."
                 raise ToolError(message)
             if param.default is not _Empty:
                 default = param.default
@@ -102,7 +113,8 @@ class ModelBuilder(BaseModel):
                 use_defaults=True,  # Always use defaults from function parameters
             )
             if processed_field == (_Empty, ...):
-                message = f"Parameter `{name}` in function `{func.__name__}` has no annotation or default value."
+                message = f"Parameter `{name}` in function `{
+                    func.__name__}` has no annotation or default value."
                 raise ToolError(message)
             fields[name] = processed_field
 
@@ -141,7 +153,8 @@ class ModelBuilder(BaseModel):
         logger.debug("Creating model from JSON schema")
         name, description, parameters = self._extract_schema_details(schema)
         logger.debug(
-            f"Extracted schema details: name={name}, description={description}, parameters={parameters}"
+            f"Extracted schema details: name={name}, description={
+                description}, parameters={parameters}"
         )
         model_name = model_name or name
         if parameters is None:
@@ -174,9 +187,9 @@ class ModelBuilder(BaseModel):
             return result
 
         title_or_name = "title" if "title" in schema else "name"
-      
+
         inner_schema = "schema" if "json_schema" in schema else "parameters"
-     
+
         keys_to_find = [title_or_name, "description", inner_schema]
         found = find_keys(schema, keys_to_find)
         if "schema" in found:
@@ -194,7 +207,8 @@ class ModelBuilder(BaseModel):
         self, parameters: Dict[str, Any], parent_model_name: str
     ) -> Dict[str, Any]:
         logger.debug(
-            f"Parsing parameters: {parameters} for parent model: {parent_model_name}"
+            f"Parsing parameters: {
+                parameters} for parent model: {parent_model_name}"
         )
         fields = {}
         required_fields = parameters.get("required", [])
@@ -218,7 +232,8 @@ class ModelBuilder(BaseModel):
         is_required: bool,
     ) -> Tuple[Union[Type, Any], pydantic.fields.FieldInfo]:
         logger.debug(
-            f"Mapping JSON type to Python for field: {field_name} with details: {details}"
+            f"Mapping JSON type to Python for field: {
+                field_name} with details: {details}"
         )
 
         json_type = details.get("type", Any)
@@ -274,7 +289,8 @@ class ModelBuilder(BaseModel):
         model_description: Optional[str],
     ) -> Type[ModelT]:
         logger.debug(
-            f"Creating Pydantic model: {model_name} with fields: {fields} and description: {model_description}"
+            f"Creating Pydantic model: {model_name} with fields: {
+                fields} and description: {model_description}"
         )
         # This fixes the issue where a description is passed as None and other dynamically
         # derived models retain the __doc__ of the previous model. Pydantic bug???
@@ -283,10 +299,16 @@ class ModelBuilder(BaseModel):
         model_description = (
             model_description or " "
         )  # f"Model for {model_name}" DO NOT DELETE THIS FIX - IT IS IMPORTANT
+
+        kwargs = {
+            "__base__": self.base_model,
+            "__doc__": model_description,
+            **self.pydantic_kwargs,
+        }
+
         return pydantic.create_model(
             model_name,
-            __base__=self.base_model,
-            __doc__=model_description,
+            **kwargs,
             **fields,
         )
 
@@ -300,7 +322,8 @@ class ModelBuilder(BaseModel):
         use_descriptions: Optional[bool] = None,
     ) -> Tuple[Type, Any]:
         logger.debug(
-            f"Processing field: {field_name} in model: {model_name} with annotation: {annotation} and default: {default}"
+            f"Processing field: {field_name} in model: {
+                model_name} with annotation: {annotation} and default: {default}"
         )
 
         # use_defaults = (
@@ -313,7 +336,8 @@ class ModelBuilder(BaseModel):
             effective_default = Field(description=default)
 
         logger.debug(
-            f"Effective default for field: {field_name} is: {effective_default}"
+            f"Effective default for field: {
+                field_name} is: {effective_default}"
         )
 
         if annotation is _Empty:
@@ -323,7 +347,8 @@ class ModelBuilder(BaseModel):
             if annotation is str and use_descriptions:
                 default = effective_default
             logger.debug(
-                f"Handled empty annotation for field: {field_name}, resulting annotation: {annotation}, default: {default}"
+                f"Handled empty annotation for field: {
+                    field_name}, resulting annotation: {annotation}, default: {default}"
             )
 
         if isinstance(annotation, dict):
@@ -332,7 +357,8 @@ class ModelBuilder(BaseModel):
 
         if isinstance(effective_default, dict):
             logger.debug(
-                f"Interpreting schema dict for field: {field_name} with default as dict"
+                f"Interpreting schema dict for field: {
+                    field_name} with default as dict"
             )
             return self._interpret_schema_dict(field_name, effective_default)
 
@@ -352,13 +378,15 @@ class ModelBuilder(BaseModel):
             return self._interpret_annotated_type(annotation, effective_default)
 
         logger.debug(
-            f"Processed field: {field_name} with annotation: {annotation}, default: {effective_default}"
+            f"Processed field: {field_name} with annotation: {
+                annotation}, default: {effective_default}"
         )
         return (annotation or type(effective_default)), effective_default
 
     def _handle_empty_annotation(self, default, model_name, field_name):
         logger.debug(
-            f"Handling empty annotation for field: {field_name} in model: {model_name} with default: {default}"
+            f"Handling empty annotation for field: {
+                field_name} in model: {model_name} with default: {default}"
         )
         if default is None:
             return self.default_type_for_none, default
@@ -382,13 +410,15 @@ class ModelBuilder(BaseModel):
     def _handle_list_type(self, annotation):
         logger.debug(f"Handling list type annotation: {annotation}")
         item_type = (
-            annotation[0] if isinstance(annotation, list) else get_args(annotation)[0]
+            annotation[0] if isinstance(
+                annotation, list) else get_args(annotation)[0]
         )
         return List[item_type]
 
     def _handle_list_default(self, default, model_name):
         logger.debug(
-            f"Handling list default for model: {model_name} with default: {default}"
+            f"Handling list default for model: {
+                model_name} with default: {default}"
         )
         if not default:
             return List[Any]
@@ -412,7 +442,8 @@ class ModelBuilder(BaseModel):
 
     def _interpret_schema_dict(self, field_name, value):
         logger.debug(
-            f"Interpreting schema dict for field: {field_name} with value: {value}"
+            f"Interpreting schema dict for field: {
+                field_name} with value: {value}"
         )
         nested_model_name = f"{field_name.capitalize()}_Model"
         nested_model = self.model_from_dict(value, nested_model_name)

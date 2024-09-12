@@ -1,7 +1,5 @@
 from __future__ import annotations
 
-import inspect
-import json
 from functools import update_wrapper
 from typing import Callable, Optional, overload
 
@@ -12,19 +10,28 @@ from .utils import ModelT
 
 class ToolWrapperBase:
     """
-    A ToolWrapperBase class provides a flexible mechanism for wrapping functions with
-    automatic input validation, model generation, and metadata handling.
-
-    Key Features:
-    1. Wraps a function and generates a Pydantic model based on its input and output types.
-    2. Validates and processes inputs before invoking the function, ensuring type safety and consistency.
-    3. Outputs are returned as validated Pydantic models, ensuring reliable downstream processing.
-    4. Provides a JSON schema for the function's model, useful for generating API documentation or validating input formats.
-    5. Can be used as a decorator or a callable object, allowing flexible application to functions.
-    6. Supports both synchronous and asynchronous function execution, enabling it to adapt to different use cases.
-    7. Integrates seamlessly as a bound method within classes, maintaining the correct `self` reference.
-    8. Easily extendable to add custom functionality through subclassing, making it adaptable to specific needs.
+    ToolWrapperBase is a base class for creating tool wrappers.
+    Args:
+        func (Optional[Callable]): The function to be wrapped.
+        name (Optional[str]): The name of the tool.
+        description (Optional[str]): The description of the tool.
+        base_model (type[ModelT]): The base model for the tool.
+        is_auto_validate_json (bool): Flag indicating whether to automatically validate JSON data.
+        **pydantic_kwargs: Additional keyword arguments to be passed to the Pydantic model.
+    Attributes:
+        func (Optional[Callable]): The wrapped function.
+        base_model (type[ModelT]): The base model for the tool.
+        name (str): The name of the tool.
+        description (str): The description of the tool.
+        is_auto_validate_json (bool): Flag indicating whether to automatically validate JSON data.
+        pydantic_kwargs (dict): Additional keyword arguments passed to the Pydantic model.
+        _model (type[ModelT]): The Pydantic model generated from the function.
+    Methods:
+        validate_json_or_data: Validates JSON data or keyword arguments.
+        model_json_schema: Generates the JSON schema for the model.
     """
+    
+    
 
     def __init__(
         self,
@@ -33,12 +40,16 @@ class ToolWrapperBase:
         description: Optional[str] = None,
         base_model: type[ModelT] = ToolBaseModel,
         is_auto_validate_json: bool = True,
+        # TODO: Add support for response model = False. This will allow for functions to return a default response without validation.
+        # maybe `response_format_return`
+        **pydantic_kwargs
     ):
         self.func = func
         self.base_model = base_model
         self.name = name or (func.__name__ if func else None)
         self.description = description or (func.__doc__ if func else None)
         self.is_auto_validate_json = is_auto_validate_json
+        self.pydantic_kwargs = pydantic_kwargs
 
         if func:
             self._model = self._create_model_from_function(func)
@@ -47,7 +58,7 @@ class ToolWrapperBase:
             self._model = None
 
     def _create_model_from_function(self, func: Callable):
-        return ModelBuilder(base_model=self.base_model).model_from_function(
+        return ModelBuilder(base_model=self.base_model, **self.pydantic_kwargs).model_from_function(
             func,
             model_name=self.name,
             model_description=self.description,
@@ -90,6 +101,30 @@ class ToolWrapperBase:
 
 
 class ToolWrapper(ToolWrapperBase):
+    """
+    ToolWrapper class is a decorator that wraps a function and provides additional functionality.
+    Properties from the super class (ToolWrapperBase):
+    - name: The name of the tool.
+    - description: The description of the tool.
+    - model: The model associated with the tool.
+    Attributes:
+        func (function): The wrapped function.
+    Methods:
+        __call__(*args, **kwargs): Executes the wrapped function with the provided arguments after validating the JSON or data.
+    Raises:
+        ValueError: If the function is not provided.
+    Returns:
+        ToolWrapper: The instance of the ToolWrapper class.
+    Example usage:
+        @ToolWrapper
+        def my_tool(data):
+            # Function implementation
+        my_tool.name = "My Tool"
+        my_tool.description = "This is a tool for processing data"
+        my_tool.model = "My Model"
+        result = my_tool(data)
+    """
+    
     def __call__(self, *args, **kwargs):
         if self.func is None:
             if not args or not callable(args[0]):
@@ -106,7 +141,22 @@ class ToolWrapper(ToolWrapperBase):
 
 
 class AsyncToolWrapper(ToolWrapperBase):
-
+    """
+    AsyncToolWrapper is a class that serves as a decorator for asynchronous tool functions.
+    Properties from super class (ToolWrapperBase):
+    - func: The wrapped function.
+    - name: The name of the tool.
+    - description: The description of the tool.
+    Methods:
+    - __call__(self, *args, **kwargs): Overrides the call behavior of the decorator. It validates the input arguments, creates a model from the wrapped function, and returns a wrapper function that executes the wrapped function asynchronously.
+    Example usage:
+    @AsyncToolWrapper
+    async def my_tool(input_data):
+        # Tool logic goes here
+    my_tool.name = "My Tool"
+    my_tool.description = "This is a tool for processing input data asynchronously."
+    """
+    
     def __call__(self, *args, **kwargs):
         if self.func is None:
             if not args or not callable(args[0]):
