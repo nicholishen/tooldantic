@@ -53,3 +53,41 @@ def test_tool_dispatch_union():
 def test_async_tool(tools):
     tools['async_tool'] = async_tool
     assert isinstance(tools['async_tool'], AsyncToolWrapper)
+    
+def test_tool_dispatch_pop():
+    tools = ToolDispatch(get_weather, get_sports_scores, base_model=BASE_MODEL)
+    tool = tools.pop('get_weather')
+    assert tool.name == 'get_weather'
+    assert 'get_weather' not in tools
+    with pytest.raises(KeyError):
+        tools.pop('get_weather')
+
+def test_tool_dispatch_clear():
+    tools = ToolDispatch(get_weather, get_sports_scores, base_model=BASE_MODEL)
+    tools.clear()
+    assert len(tools) == 0
+
+def test_tool_dispatch_get():
+    tools = ToolDispatch(get_weather, base_model=BASE_MODEL)
+    tool = tools.get('get_weather', get_sports_scores)
+    assert tool.name == 'get_weather'
+    tool = tools.get('nonexistent', default=None)
+    assert tool is None
+
+def test_tool_dispatch_items():
+    tools = ToolDispatch(get_weather, get_sports_scores, base_model=BASE_MODEL)
+    items = list(tools.items())
+    assert len(items) == 2
+    assert items[0][0] == 'get_weather'
+    assert items[1][0] == 'get_sports_scores'
+
+def test_tool_dispatch_keys():
+    tools = ToolDispatch(get_weather, get_sports_scores, base_model=BASE_MODEL)
+    keys = list(tools.keys())
+    assert keys == ['get_weather', 'get_sports_scores']
+
+def test_tool_dispatch_values():
+    tools = ToolDispatch(get_weather, get_sports_scores, base_model=BASE_MODEL)
+    values = list(tools.values())
+    assert len(values) == 2
+    assert values[0].name == 'get_weather'

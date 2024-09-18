@@ -1,5 +1,6 @@
 import pytest
 from pydantic import BaseModel
+import pydantic
 from tooldantic.schema_generators import (
     CompatibilitySchemaGenerator,
     GenericSchemaGenerator,
@@ -102,3 +103,5 @@ def test_anthropic_schema_generator():
 
     assert "input_schema" in generated_schema
     assert generated_schema["input_schema"]["type"] == "object"
+
+

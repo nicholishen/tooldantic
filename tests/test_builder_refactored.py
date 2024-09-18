@@ -261,3 +261,43 @@ def test_nested_data_to_schema_back_to_model_and_validate():
     ModelFromSchema = model_builder.model_from_json_schema(schema_from_data, "NestedModel")
     validated_data = ModelFromSchema(**data)
     assert validated_data.inners[0].name == 'Alice'
+    
+
+def test_map_json_type_to_python_with_format():
+    import pydantic, datetime
+    model_builder = ModelBuilder()
+    details_email = {
+        "type": "string",
+        "format": "email"
+    }
+    field_type, field_info = model_builder._map_json_type_to_python(
+        details_email, "email_field", "TestModel", False
+    )
+    assert field_type == pydantic.EmailStr
+
+    details_uri = {
+        "type": "string",
+        "format": "uri"
+    }
+    field_type, field_info = model_builder._map_json_type_to_python(
+        details_uri, "uri_field", "TestModel", False
+    )
+    assert field_type == pydantic.AnyUrl
+
+    details_datetime = {
+        "type": "string",
+        "format": "date-time"
+    }
+    field_type, field_info = model_builder._map_json_type_to_python(
+        details_datetime, "datetime_field", "TestModel", False
+    )
+    assert field_type == datetime.datetime
+
+    details_date = {
+        "type": "string",
+        "format": "date"
+    }
+    field_type, field_info = model_builder._map_json_type_to_python(
+        details_date, "date_field", "TestModel", False
+    )
+    assert field_type == datetime.date
