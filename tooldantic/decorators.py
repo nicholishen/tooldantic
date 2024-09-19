@@ -66,14 +66,14 @@ class ToolWrapperBase:
         )
 
     @overload
-    def validate_json_or_data(self, json_data: str): ...
+    def validate_json_or_data(self, _json_data: str): ...
 
     @overload
     def validate_json_or_data(self, **kwargs): ...
 
-    def validate_json_or_data(self, json_data: Optional[str] = None, **kwargs):
-        if self.is_auto_validate_json and json_data:
-            return self.Model.model_validate_json(json_data).model_dump()
+    def validate_json_or_data(self, _json_data: Optional[str] = None, **kwargs):
+        if self.is_auto_validate_json and _json_data:
+            return self.Model.model_validate_json(_json_data).model_dump()
         return self.Model(**kwargs).model_dump()
 
     def model_json_schema(self, schema_generator=None, **kwargs):
