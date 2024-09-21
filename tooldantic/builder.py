@@ -94,8 +94,9 @@ class ModelBuilder:
                 # allow kwargs in tools!
                 if param.kind == param.VAR_KEYWORD:
                     continue
-                message = f"Parameter `{name}` in function `{
-                    func.__name__}` has no annotation or docstring type."
+                message = (
+                    f"Parameter `{name}` in function "
+                    f"`{func.__name__}` has no annotation or docstring type.")
                 raise ToolError(message)
             if param.default is not _Empty:
                 default = param.default
@@ -113,8 +114,9 @@ class ModelBuilder:
                 use_defaults=True,  # Always use defaults from function parameters
             )
             if processed_field == (_Empty, ...):
-                message = f"Parameter `{name}` in function `{
-                    func.__name__}` has no annotation or default value."
+                message = (
+                    f"Parameter `{name}` in function "
+                    f"`{func.__name__}` has no annotation or default value.")
                 raise ToolError(message)
             fields[name] = processed_field
 
