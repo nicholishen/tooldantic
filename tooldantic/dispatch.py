@@ -66,8 +66,8 @@ class ToolDispatch:
         func = self._wrap_func(value, name=key)
         self.func_dispatch[key] = func
 
-    def __iter__(self):
-        yield from [f.model_json_schema() for f in self.func_dispatch.values()]
+    # def __iter__(self):
+    #     yield from [f.model_json_schema() for f in self.func_dispatch.values()]
 
     def __or__(self, other):
         if not isinstance(other, ToolDispatch):
@@ -90,6 +90,10 @@ class ToolDispatch:
             Wrapper = AsyncToolWrapper if is_async else ToolWrapper
             func = Wrapper(func, base_model=self.base_model, **kwargs)
         return func
+    
+    @property
+    def schemas(self):
+        return [f.model_json_schema() for f in self.func_dispatch.values()]
 
     def pop(self, key: str) -> ToolWrapperBase:
         if key not in self.func_dispatch:
