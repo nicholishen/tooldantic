@@ -155,8 +155,8 @@ class ModelBuilder:
         logger.debug("Creating model from JSON schema")
         name, description, parameters = self._extract_schema_details(schema)
         logger.debug(
-            f"Extracted schema details: name={name}, description={
-                description}, parameters={parameters}"
+            f"Extracted schema details: name={name}, description="
+            f"{description}, parameters={parameters}"
         )
         model_name = model_name or name
         if parameters is None:
@@ -209,8 +209,8 @@ class ModelBuilder:
         self, parameters: Dict[str, Any], parent_model_name: str
     ) -> Dict[str, Any]:
         logger.debug(
-            f"Parsing parameters: {
-                parameters} for parent model: {parent_model_name}"
+            f"Parsing parameters: "
+            f"{parameters} for parent model: {parent_model_name}"
         )
         fields = {}
         required_fields = parameters.get("required", [])
@@ -234,8 +234,8 @@ class ModelBuilder:
         is_required: bool,
     ) -> Tuple[Union[Type, Any], pydantic.fields.FieldInfo]:
         logger.debug(
-            f"Mapping JSON type to Python for field: {
-                field_name} with details: {details}"
+            f"Mapping JSON type to Python for field: "
+            f"{field_name} with details: {details}"
         )
 
         json_type = details.get("type", Any)
@@ -291,8 +291,8 @@ class ModelBuilder:
         model_description: Optional[str],
     ) -> Type[ModelT]:
         logger.debug(
-            f"Creating Pydantic model: {model_name} with fields: {
-                fields} and description: {model_description}"
+            f"Creating Pydantic model: {model_name} with fields: "
+            f"{fields} and description: {model_description}"
         )
         # This fixes the issue where a description is passed as None and other dynamically
         # derived models retain the __doc__ of the previous model. Pydantic bug???
@@ -324,8 +324,9 @@ class ModelBuilder:
         use_descriptions: Optional[bool] = None,
     ) -> Tuple[Type, Any]:
         logger.debug(
-            f"Processing field: {field_name} in model: {
-                model_name} with annotation: {annotation} and default: {default}"
+            f"""Processing field: {field_name} in model: \
+            {model_name} with annotation: {annotation} and default: {default}
+            """
         )
 
         # use_defaults = (
@@ -338,8 +339,8 @@ class ModelBuilder:
             effective_default = Field(description=default)
 
         logger.debug(
-            f"Effective default for field: {
-                field_name} is: {effective_default}"
+            f"""Effective default for field: \
+            {field_name} is: {effective_default}"""
         )
 
         if annotation is _Empty:
@@ -349,8 +350,8 @@ class ModelBuilder:
             if annotation is str and use_descriptions:
                 default = effective_default
             logger.debug(
-                f"Handled empty annotation for field: {
-                    field_name}, resulting annotation: {annotation}, default: {default}"
+                f"""Handled empty annotation for field: \
+                {field_name}, resulting annotation: {annotation}, default: {default}"""
             )
 
         if isinstance(annotation, dict):
@@ -359,8 +360,8 @@ class ModelBuilder:
 
         if isinstance(effective_default, dict):
             logger.debug(
-                f"Interpreting schema dict for field: {
-                    field_name} with default as dict"
+                f"""Interpreting schema dict for field: \
+                {field_name} with default as dict"""
             )
             return self._interpret_schema_dict(field_name, effective_default)
 
@@ -380,15 +381,15 @@ class ModelBuilder:
             return self._interpret_annotated_type(annotation, effective_default)
 
         logger.debug(
-            f"Processed field: {field_name} with annotation: {
-                annotation}, default: {effective_default}"
+            f"""Processed field: {field_name} with annotation:
+            {annotation}, default: {effective_default}"""
         )
         return (annotation or type(effective_default)), effective_default
 
     def _handle_empty_annotation(self, default, model_name, field_name):
         logger.debug(
-            f"Handling empty annotation for field: {
-                field_name} in model: {model_name} with default: {default}"
+            f"""Handling empty annotation for field:
+            {field_name} in model: {model_name} with default: {default}"""
         )
         if default is None:
             return self.default_type_for_none, default
@@ -419,8 +420,8 @@ class ModelBuilder:
 
     def _handle_list_default(self, default, model_name):
         logger.debug(
-            f"Handling list default for model: {
-                model_name} with default: {default}"
+            f"""Handling list default for model: \
+            {model_name} with default: {default}"""
         )
         if not default:
             return List[Any]
@@ -444,8 +445,8 @@ class ModelBuilder:
 
     def _interpret_schema_dict(self, field_name, value):
         logger.debug(
-            f"Interpreting schema dict for field: {
-                field_name} with value: {value}"
+            f"""Interpreting schema dict for field: 
+            {field_name} with value: {value}"""
         )
         nested_model_name = f"{field_name.capitalize()}_Model"
         nested_model = self.model_from_dict(value, nested_model_name)
