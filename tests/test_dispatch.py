@@ -36,19 +36,19 @@ def test_rename_tool(tools):
     assert tools['x'](x=1) == 1
     assert tools['x']('{"x":1}') == 1
     assert tools['x'].name == 'x'
-    assert list(tools)[-1]['function']['name'] == 'x'
+    assert list(tools.schemas)[-1]['function']['name'] == 'x'
 
 def test_tool_dispatch_union():
     tools = ToolDispatch(get_weather, get_sports_scores, base_model=BASE_MODEL)
     other_tools = ToolDispatch(used_name, base_model=BASE_MODEL, __doc__="OTHER_TOOLS")
     new_tools = tools | other_tools
     new_tools['x'] = async_tool
-    assert len(list(new_tools)) == 4
+    assert len(list(new_tools.schemas)) == 4
     assert 'x' in new_tools
     func_disp = {**new_tools}
     assert len(func_disp) == 4
     assert 'x' in func_disp
-    assert all(isinstance(x, dict) for x in tools)
+    assert all(isinstance(x, dict) for x in tools.schemas)
 
 def test_async_tool(tools):
     tools['async_tool'] = async_tool

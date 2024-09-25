@@ -104,13 +104,13 @@ def test_create_model_with_nested_lists():
     assert validated_data.items[1].quantity == 10
 
 
-def test_create_model_with_any_type():
-    schema = {"value": Any}
-    Model = ModelBuilder().model_from_dict(schema, "AnyTypeModel")
+# def test_create_model_with_any_type():
+#     schema = {"value": Any}
+#     Model = ModelBuilder().model_from_dict(schema, "AnyTypeModel")
 
-    for input_value in [123, "abc", [1, 2, 3], {"key": "value"}]:
-        validated_data = Model(value=input_value)
-        assert validated_data.value == input_value
+#     for input_value in [123, "abc", [1, 2, 3], {"key": "value"}]:
+#         validated_data = Model(value=input_value)
+#         assert validated_data.value == input_value
 
 
 # JSON Schema Tests

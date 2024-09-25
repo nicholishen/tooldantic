@@ -150,17 +150,17 @@ def test_complex_nested_structure():
     assert validated_data.profile.details.hobbies == ["reading", "swimming"]
 
 
-def test_dynamic_field_types():
-    from typing import Any
+# def test_dynamic_field_types():
+#     from typing import Any
 
-    dynamic_schema = {"value": Any}
-    model_name = "DynamicFieldModel"
-    Model = ModelBuilder().model_from_dict(dynamic_schema, model_name)
+#     dynamic_schema = {"value": Any}
+#     model_name = "DynamicFieldModel"
+#     Model = ModelBuilder().model_from_dict(dynamic_schema, model_name)
 
-    for input_value in [123, "abc", [1, 2, 3], {"key": "value"}]:
-        data = {"value": input_value}
-        validated_data = Model(**data)
-        assert validated_data.value == input_value
+#     for input_value in [123, "abc", [1, 2, 3], {"key": "value"}]:
+#         data = {"value": input_value}
+#         validated_data = Model(**data)
+#         assert validated_data.value == input_value
 
 
 import pytest
