@@ -36,14 +36,14 @@ class DocumentedEnum(str, Enum):
     def __init_subclass__(cls, **kwargs):
         super().__init_subclass__(**kwargs)
 
-        doc_fmt = cls.__doc__ or ""
-        bounds = cls._find_placeholder_bounds(doc_fmt)
+        cls.__doc__ = cls.__doc__ or ""
+        bounds = cls._find_placeholder_bounds(cls.__doc__)
         if bounds:
             # Replace placeholder with {0} so it can be any identifier
-            doc_fmt = doc_fmt[: bounds[0]] + "{0}" + doc_fmt[bounds[1] :]
+            cls.__doc__ = cls.__doc__[: bounds[0]] + "{0}" + cls.__doc__[bounds[1] :]
         else:
-            doc_fmt += "\n\nValid options:\n{0}"
-        cls.__doc__ = doc_fmt.format(
+            cls.__doc__ += "\nValid options:\n{0}"
+        cls.__doc__ = cls.__doc__.format(
             "\n".join(f"'{member.value}': {member.__doc__}" for member in cls)
         )
 
@@ -56,7 +56,7 @@ class DocumentedEnum(str, Enum):
         if len(placeholders) > 1:
             raise ValueError(
                 f"Only one placeholder is allowed for enum options in the `{cls.__name__}` docstring. "
-                f"Found {len(placeholders)} in '{doc_fmt}'"
+                f"Found {len(placeholders)} in '{cls.__doc__}'"
             )
         if placeholders:
             identifier = placeholders[0].group(1)
