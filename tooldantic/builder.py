@@ -100,10 +100,8 @@ class ModelBuilder:
                 raise ToolError(message)
             if param.default is not _Empty:
                 default = param.default
-            elif (
-                docstring_default := docstring.get(name, {}).get("default") is not None
-            ):
-                default = docstring_default
+            elif docstring.get(name, {}).get("default") is not None:
+                default = docstring.get(name, {}).get("default")
             else:
                 default = _Empty
             processed_field = self._process_field(
